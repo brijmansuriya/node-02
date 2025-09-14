@@ -8,6 +8,8 @@ export function UserResource(user: User) {
     name: user.name,
     email: user.email,
     image: assets(user.image as string),
+    type: user.type.toString().toLowerCase(),
+    status: user.status,
     createdAt: user.createdAt,
   };
 }

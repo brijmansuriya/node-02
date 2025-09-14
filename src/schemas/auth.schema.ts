@@ -18,4 +18,6 @@ export const profileSchema = z.object({
   image: z.string().url("Image must be a valid URL").optional(),
   email: z.string({ message: "Email is required" }).email("Invalid email address"),
   password: z.string({ message: "Password is required" }).min(6, "Password must be at least 6 characters"),
+  status: z.string().optional(),
+  type: z.string().optional(),
 });

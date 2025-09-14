@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "@config/database";
+import { UserType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { UserResource } from "@resources/user.resource";
 import { ApiResponse } from "@utils/response";
@@ -25,7 +26,7 @@ export class AuthController {
 
     const isValid = await bcrypt.compare(password, user.password);
     console.log('isValid', isValid);
-    
+
     if (!isValid) {
       return ApiResponse.error(res, "Invalid password");
     }
@@ -76,14 +77,52 @@ export class AuthController {
   //profile
   public profileUpdate = async (req: Request, res: Response): User => {
     const { id } = req.params;
-    console.log(id);
 
-    const { name, email, password } = req.body;
+    const { name, email, password, type, status } = req.body;
     const { image } = req.filesStored as any;
 
+    console.log(status);
+    console.log(type);
+    
+
+    //check email is already exists
+    // Check if another user (not the current user) already has this email
+    const emailExists = await prisma.user.findFirst({
+      where: {
+        email,
+        NOT: { id: parseInt(id) },
+      },
+    });
+
+    if (emailExists) {
+      return ApiResponse.error(res, "Email already exists");
+    }
+
+    let prismaType: UserType | undefined;
+
+    if (req.body.type) {
+      const upperType = req.body.type.toString().toUpperCase();
+
+      if (!Object.values(UserType).includes(upperType as UserType)) {
+        return res.status(400).json({ message: "Invalid user type" });
+      }
+      prismaType = upperType as UserType;
+
+    }
+
+    // Convert status string to boolean
+    const prismaStatus = status?.toString().toLowerCase() == "true";
+    
     const user = await prisma.user.update({
       where: { id: parseInt(id) },
-      data: { name, email, password, image },
+      data: {
+        name,
+        email,
+        password,
+        image,
+        status: prismaStatus,
+        type: prismaType,
+      },
     });
 
     return ApiResponse.success(res, { user: UserResource(user) });
