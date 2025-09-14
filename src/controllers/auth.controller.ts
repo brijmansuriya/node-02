@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { UserResource } from "@resources/user.resource";
 import { ApiResponse } from "@utils/response";
 import { signToken } from "@utils/jwt";
+import jwt from "jsonwebtoken";
 
 
 export class AuthController {
@@ -32,6 +33,8 @@ export class AuthController {
     }
 
     // 3. Generate token
+    console.log('user', user.id);
+    
     const token = signToken({ id: user.id });
 
     return ApiResponse.success(res, {
@@ -129,8 +132,10 @@ export class AuthController {
   }
 
   //profile 
-  public profile = async (req: Request, res: Response) : Promise<Response> => {
+  public profile = async (req: Request, res: Response): Promise<Response> => {
     // get tockeg to id 
+    console.log('profile user::::::::::::', req.user);
+    
     const user = await prisma.user.findUnique({
       where: { id: req.user?.id },
     });
@@ -142,4 +147,24 @@ export class AuthController {
 
     return ApiResponse.success(res, { user: UserResource(user) });
   }
+
+
+  public logout = async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return ApiResponse.error(res, "No token provided");
+
+      // Decode token expiry
+      const decoded = jwt.decode(token) as { exp?: number };
+      const expiresAt = decoded?.exp
+        ? new Date(decoded.exp * 1000) // convert to ms
+        : new Date(Date.now() + 60 * 60 * 1000); // fallback 1h
+
+      await prisma.blacklistToken.create({
+        data: { token, expiresAt },
+      });
+
+      return ApiResponse.success(res, { message: "Logged out successfully" });
+  
+  }
+
 }

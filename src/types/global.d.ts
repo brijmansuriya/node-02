@@ -5,12 +5,14 @@ declare module "express-serve-static-core" {
   interface Request {
     filesStored?: Record<string, string>;
     user?: User;          
+    post?: Post;
   }
 }
 
 // Global types for Prisma models
 declare global {
-  type User = Prisma.UserGetPayload<{ include: { _count: true,image: true } }>;
+  type User = Prisma.UserGetPayload<{ include: { _count: true,image: true , posts: true } }>;
+  type Post = Prisma.PostGetPayload<{ include: { _count: true, image: true , user: true } }>;
 
   // type User = Omit<Prisma.UserGetPayload<{ include: { _count: true, image: true } }>, "_count"> & {
   //   _count?: { posts: number }; // Optional

@@ -8,12 +8,26 @@ const prisma = new PrismaClient();
 export async function auth(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
     console.log('authHeader', authHeader);
+
+   
+
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         console.log('unauthorized:::');
         return ApiResponse.unauthorized(res, "Unauthorized");
     }
+    
 
     const token = authHeader.split(" ")[1];
+
+     //block
+    const blacklisted = await prisma.blacklistToken.findUnique({
+        where: { token: token },
+    });
+
+    if (blacklisted) {
+        return res.status(401).json(ApiResponse.error(res,"Token blacklisted",null,401));
+    }
 
     try {
         // 1. Verify token
@@ -27,7 +41,9 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
         }
 
         // 3. Attach to request
-        req.user = user;
+        console.log('auth user', user);
+        
+        req.user = user as unknown as User;
 
         next();
     } catch (err) {

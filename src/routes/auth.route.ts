@@ -11,6 +11,7 @@ const authController = new AuthController();
 router.get("/", authController.index);
 router.post("/login", fileUpload, validate(loginSchema), authController.login);
 router.post("/register", fileUpload, validate(registerSchema), authController.register);
+router.get("/logout", auth, authController.logout);
 
 //auth middleware
 router.get('/profile', auth, authController.profile);
