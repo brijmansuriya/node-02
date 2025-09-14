@@ -3,13 +3,38 @@ import { Response } from "express";
 import { ZodError } from "zod";
 
 export class ApiResponse {
-  static success(res: Response, data: any = {}, message = "Success", statusCode = 200) {
+  static success(
+    res: Response,
+    data: any = {},
+    message = "Success",
+    statusCode = 200
+  ) {
+    // Case 1: Pagination
+    if (data?.meta && data?.links && Array.isArray(data?.data)) {
+      return res.status(statusCode).json({
+        status: true,
+        message,
+        data: data.data, // records
+        meta: data.meta,
+        links: data.links,
+      });
+    }
+
+    // Case 2: Normal response
     return res.status(statusCode).json({
       status: true,
       message,
       data,
     });
   }
+  
+  // static paginate(res: Response, data: any = {}, message = "Success", statusCode = 200) {
+  //   return res.status(statusCode).json({
+  //     status: true,
+  //     message,
+  //     ...data,
+  //   });
+  // }
 
   static error(res: Response, message = "Something went wrong", errors: any = null, statusCode = 500) {
     return res.status(statusCode).json({

@@ -8,7 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
+model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique(map: "User_email_key")
   name      String?
@@ -16,11 +16,27 @@ model user {
   password  String
   status    Boolean  @default(true)
   type      UserType @default(USER) @map("type")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  posts     Post[]
+
 }
 
 enum UserType {
   USER
   ADMIN
+}
+
+//model post
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  status    Boolean  @default(true)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

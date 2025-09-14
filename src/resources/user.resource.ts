@@ -14,6 +14,6 @@ export function UserResource(user: User) {
   };
 }
 
-export function UsersResource(users:User[]) {
+export function UserCollection(users:User[]) {
   return users.map(user => UserResource(user));
 }
