@@ -75,7 +75,7 @@ export class AuthController {
   }
 
   //profile
-  public profileUpdate = async (req: Request, res: Response): User => {
+  public profileUpdate = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const { name, email, password, type, status } = req.body;
@@ -83,7 +83,7 @@ export class AuthController {
 
     console.log(status);
     console.log(type);
-    
+
 
     //check email is already exists
     // Check if another user (not the current user) already has this email
@@ -112,7 +112,7 @@ export class AuthController {
 
     // Convert status string to boolean
     const prismaStatus = status?.toString().toLowerCase() == "true";
-    
+
     const user = await prisma.user.update({
       where: { id: parseInt(id) },
       data: {
@@ -129,14 +129,17 @@ export class AuthController {
   }
 
   //profile 
-  public profile = async (req: Request, res: Response): User => {
-
+  public profile = async (req: Request, res: Response) : Promise<Response> => {
     // get tockeg to id 
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
+      where: { id: req.user?.id },
     });
 
-    return ApiResponse.success(res, { user: UserResource(user) });
+    if (!user) {
+      // user not found
+      return ApiResponse.error(res, "User not found", null, 404);
+    }
 
+    return ApiResponse.success(res, { user: UserResource(user) });
   }
 }

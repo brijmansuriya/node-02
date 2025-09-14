@@ -4,6 +4,7 @@ import { UserResource, UserCollection } from "@resources/user.resource";
 import { ApiResponse } from "@utils/response";
 import {paginate} from "@utils/pagination"
 import { UserType } from "@prisma/client";
+import { User } from "@prisma/client";
 
 export class UserController {
   public index = async(req: Request, res: Response) => {
@@ -83,7 +84,7 @@ export class UserController {
   public delete = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const user = await prisma.user.delete({
+    const user : User = await prisma.user.delete({
       where: { id: parseInt(id) },
     });
 

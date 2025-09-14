@@ -11,6 +11,11 @@ declare module "express-serve-static-core" {
 // Global types for Prisma models
 declare global {
   type User = Prisma.UserGetPayload<{ include: { _count: true,image: true } }>;
+
+  // type User = Omit<Prisma.UserGetPayload<{ include: { _count: true, image: true } }>, "_count"> & {
+  //   _count?: { posts: number }; // Optional
+  // };
+
   // add more models as needed
 }
 

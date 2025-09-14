@@ -1,4 +1,5 @@
 import { assets } from "@utils/asset";
+import { User } from "@prisma/client";
 
 export function UserResource(user: User) {
   if (!user) return null;
