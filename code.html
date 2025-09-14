@@ -3,31 +3,259 @@
 
 <div class="code-container">
     <textarea class="code_button" readonly="">
-
-        generator client {
-            provider = "prisma-client-js"
-            //output   = "../node_modules/.prisma/client"
+      <pre><code class="language-json">
+        {
+          // ---------- API Responses ----------
+          "API Response Success": {
+            "prefix": ["resok", "success", "ok"],
+            "body": [
+              "res.status(${1:200}).json({",
+              "  status: true,",
+              "  message: \"${2:Success}\",",
+              "  data: ${3:{}}",
+              "});"
+            ]
+          },
+          "API Response Error": {
+            "prefix": ["reserr", "error", "fail"],
+            "body": [
+              "res.status(${1:400}).json({",
+              "  status: false,",
+              "  message: \"${2:Error occurred}\",",
+              "  errors: ${3:[]}",
+              "});"
+            ]
+          },
+          "API Response Validation": {
+            "prefix": ["resval", "validation", "invalid"],
+            "body": [
+              "res.status(${1:422}).json({",
+              "  status: false,",
+              "  message: \"${2:Validation failed}\",",
+              "  errors: ${3:errors}",
+              "});"
+            ]
+          },
+        
+          // ---------- CRUD ----------
+          "Prisma Create": {
+            "prefix": ["prcreate", "create", "add"],
+            "body": [
+              "const ${1:record} = await prisma.${2:model}.create({",
+              "  data: {",
+              "    ${3:field}: req.body.${3:field},",
+              "  },",
+              "});",
+              "res.status(201).json({ status: true, message: \"Created\", data: ${1:record} });"
+            ]
+          },
+          "Prisma Find Unique": {
+            "prefix": ["prfindone", "findone", "getone"],
+            "body": [
+              "const ${1:record} = await prisma.${2:model}.findUnique({",
+              "  where: { id: Number(req.params.id) },",
+              "});",
+              "if (!${1:record}) return res.status(404).json({ status: false, message: \"Not found\" });",
+              "res.json({ status: true, data: ${1:record} });"
+            ]
+          },
+          "Prisma Find Many": {
+            "prefix": ["prfindmany", "findmany", "getall"],
+            "body": [
+              "const ${1:records} = await prisma.${2:model}.findMany();",
+              "res.json({ status: true, data: ${1:records} });"
+            ]
+          },
+          "Prisma Update": {
+            "prefix": ["prupdate", "update", "edit"],
+            "body": [
+              "const ${1:record} = await prisma.${2:model}.update({",
+              "  where: { id: Number(req.params.id) },",
+              "  data: {",
+              "    ${3:field}: req.body.${3:field},",
+              "  },",
+              "});",
+              "res.json({ status: true, message: \"Updated\", data: ${1:record} });"
+            ]
+          },
+          "Prisma Delete": {
+            "prefix": ["prdelete", "delete", "remove"],
+            "body": [
+              "await prisma.${1:model}.delete({",
+              "  where: { id: Number(req.params.id) },",
+              "});",
+              "res.json({ status: true, message: \"Deleted\" });"
+            ]
+          },
+        
+          // ---------- Auth ----------
+          "Auth Register": {
+            "prefix": ["authreg", "register", "signup"],
+            "body": [
+              "const { email, password, name } = req.body;",
+              "const hashedPassword = await bcrypt.hash(password, 10);",
+              "const user = await prisma.user.create({",
+              "  data: { email, password: hashedPassword, name },",
+              "});",
+              "const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });",
+              "res.status(201).json({ status: true, message: \"Registered\", token, user });"
+            ]
+          },
+          "Auth Login": {
+            "prefix": ["authlogin", "login", "signin"],
+            "body": [
+              "const { email, password } = req.body;",
+              "const user = await prisma.user.findUnique({ where: { email } });",
+              "if (!user) return res.status(404).json({ status: false, message: \"User not found\" });",
+              "const isMatch = await bcrypt.compare(password, user.password);",
+              "if (!isMatch) return res.status(401).json({ status: false, message: \"Invalid credentials\" });",
+              "const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });",
+              "res.json({ status: true, message: \"Login success\", token, user });"
+            ]
+          },
+          "JWT Verify Middleware": {
+            "prefix": ["jwtverify", "verifytoken", "authmid"],
+            "body": [
+              "export const authMiddleware = (req, res, next) => {",
+              "  const token = req.headers['authorization']?.split(' ')[1];",
+              "  if (!token) return res.status(401).json({ status: false, message: 'No token provided' });",
+              "  try {",
+              "    const decoded = jwt.verify(token, process.env.JWT_SECRET!);",
+              "    req.user = decoded;",
+              "    next();",
+              "  } catch (err) {",
+              "    return res.status(401).json({ status: false, message: 'Invalid token' });",
+              "  }",
+              "};"
+            ]
+          },
+          "Bcrypt Hash": {
+            "prefix": ["bhash", "hashpw"],
+            "body": ["const hashedPassword = await bcrypt.hash(${1:password}, 10);"]
+          },
+          "Bcrypt Compare": {
+            "prefix": ["bcompare", "checkpw"],
+            "body": ["const isMatch = await bcrypt.compare(${1:password}, ${2:hashedPassword});"]
+          },
+        
+          // ---------- Where Queries ----------
+          "Prisma Find Many With Where": {
+            "prefix": ["prwhere", "findwhere"],
+            "body": [
+              "const ${1:records} = await prisma.${2:model}.findMany({",
+              "  where: {",
+              "    ${3:field}: ${4:value},",
+              "  },",
+              "});",
+              "res.json({ status: true, data: ${1:records} });"
+            ]
+          },
+          "Prisma Find First With Where": {
+            "prefix": ["prfirst", "findfirst"],
+            "body": [
+              "const ${1:record} = await prisma.${2:model}.findFirst({",
+              "  where: {",
+              "    ${3:field}: ${4:value},",
+              "  },",
+              "});",
+              "if (!${1:record}) return res.status(404).json({ status: false, message: 'Not found' });",
+              "res.json({ status: true, data: ${1:record} });"
+            ]
+          },
+        
+          // ---------- Relations ----------
+          "Prisma Relation Include": {
+            "prefix": ["princlude", "include"],
+            "body": [
+              "const ${1:record} = await prisma.${2:model}.findUnique({",
+              "  where: { id: Number(req.params.id) },",
+              "  include: {",
+              "    ${3:relation}: true,",
+              "  },",
+              "});",
+              "res.json({ status: true, data: ${1:record} });"
+            ]
+          },
+          "Prisma Relation Select": {
+            "prefix": ["prselect", "select"],
+            "body": [
+              "const ${1:record} = await prisma.${2:model}.findUnique({",
+              "  where: { id: Number(req.params.id) },",
+              "  select: {",
+              "    id: true,",
+              "    name: true,",
+              "    ${3:relation}: {",
+              "      select: {",
+              "        id: true,",
+              "        ${4:field}: true",
+              "      }",
+              "    }",
+              "  },",
+              "});",
+              "res.json({ status: true, data: ${1:record} });"
+            ]
           }
-          
-          datasource db {
-            provider = "mysql"
-            url      = env("DATABASE_URL")
-          }
-          
-          model user {
-            id        Int      @id @default(autoincrement())
-            email     String   @unique(map: "User_email_key")
-            name      String?
-            image     String?
-            password  String
-            createdAt DateTime @default(now())
-            updatedAt DateTime @updatedAt
-          }
+        }
+        
           
         
+        </code></pre>
+    </textarea>
+    <span style="font-size: large;">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </span>
+</div>
+
+
+
+<div><br /></div>
+<div><b>src\middlewares\validate.ts</b></div>
+
+<div class="code-container">
+    <textarea class="code_button" readonly="">   
+        <pre><code class="language-json">
+       
+        import { Request, Response, NextFunction } from "express";
+        import { ZodType } from "zod";
+        import { ApiResponse } from "@utils/response";
+
+        export const validate = (schema: ZodType<any>) => {
+          return (req: Request, res: Response, next: NextFunction) => {
+            console.log('req.body', req.body);
+            const result = schema.safeParse(req.body);
+
+            if (!result.success) {
+              // Use the proper validationError formatter
+              return ApiResponse.validationError(res, result.error);
+            }
+
+            // Attach parsed and typed data to req.body
+            req.body = result.data;
+            next();
+          };
+        };
+
+        </code></pre>
 
     </textarea>
     <span style="font-size: large;">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
     </span>
+</div>
+
+<!--src\routes\user.route.ts-->
+<div><br /></div>
+<div><b>src\routes\user.route.ts</b></div>
+
+
+
+<div><br /></div>
+<div><b>src\utils\jwt.ts</b></div>
+
+<div class="code-container">
+    <textarea class="code_button" readonly="">      
+        //add code 
+    </textarea>
+    <span style="font-size: large;">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button></span>
 </div>
