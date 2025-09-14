@@ -23,7 +23,9 @@ export class AuthController {
       return ApiResponse.error(res, "User not found");
     }
 
-    const isValid = bcrypt.compare(password, user.password);
+    const isValid = await bcrypt.compare(password, user.password);
+    console.log('isValid', isValid);
+    
     if (!isValid) {
       return ApiResponse.error(res, "Invalid password");
     }
@@ -88,10 +90,14 @@ export class AuthController {
   }
 
   //profile 
-  public profile =async(req:Request,res:Response) : User => {
-    
+  public profile = async (req: Request, res: Response): User => {
+
     // get tockeg to id 
-    // const user = await prisma.user
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    return ApiResponse.success(res, { user: UserResource(user) });
 
   }
 }

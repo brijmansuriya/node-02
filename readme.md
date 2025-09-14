@@ -58,3 +58,6 @@ image uplode
 crud
 peginetion
 mail
+
+socket 
+ejs

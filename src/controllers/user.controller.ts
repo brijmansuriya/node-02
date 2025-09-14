@@ -14,6 +14,7 @@ export class UserController {
   };
 
   public delete = (req: Request, res: Response): void => {
+    
     res.json({ message: "User controller working!" });
   };
 }

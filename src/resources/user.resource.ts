@@ -1,5 +1,4 @@
-
-import { assets } from "@helpers/index";
+import { assets } from "@utils/asset";
 
 export function UserResource(user: User) {
   if (!user) return null;

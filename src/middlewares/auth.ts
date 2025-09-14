@@ -5,11 +5,12 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export async function auth(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
-
+    console.log('authHeader', authHeader);
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json(ApiResponse.error(res, "Unauthorized", 401));
+        console.log('unauthorized:::');
+        return ApiResponse.unauthorized(res, "Unauthorized");
     }
 
     const token = authHeader.split(" ")[1];
@@ -21,7 +22,8 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
         // 2. Get user from DB
         const user = await prisma.user.findUnique({ where: { id: payload.id } });
         if (!user) {
-            return res.status(401).json(ApiResponse.error(res,"User not found", 401));
+            console.log('user not found');
+            return res.status(401).json(ApiResponse.error(res,"user not found",null,401));
         }
 
         // 3. Attach to request
@@ -29,6 +31,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
 
         next();
     } catch (err) {
-        return res.status(401).json(ApiResponse.error(res,"Invalid token", 401));
+        console.log('invalid token',err);
+        return res.status(401).json(ApiResponse.error(res,"Invalid token",null,401));
     }
 }

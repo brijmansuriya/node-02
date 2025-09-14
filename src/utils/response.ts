@@ -31,6 +31,18 @@ export class ApiResponse {
       }
     });
 
-    return this.error(res, message, formattedErrors, 400);
+    return res.status(400).json({
+      status: false,
+      message,
+      errors: formattedErrors,
+    });
+  }
+
+  static unauthorized(res: Response, message = "Unauthorized") {
+    return res.status(401).json({
+      status: false,
+      message,
+      errors: null,
+    });
   }
 }
